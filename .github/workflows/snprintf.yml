@@ -1,0 +1,30 @@
+name: Test snprintf
+
+on:
+  workflow_dispatch:
+
+jobs:
+  snprintf:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [ubuntu]
+        tag: [jammy,kinetic]
+        platform: [win32]
+        include:
+          - image: debian
+            tag: sid
+            platform: win32
+    steps:
+      - name: run test
+        run: |
+          set -xe
+          docker run --rm -i ghcr.io/$GITHUB_REPOSITORY/${{ matrix.image }}-${{ matrix.tag }}-${{ matrix.platform }}:latest bash -s <<-EOF
+            {
+              echo "char snprintf();"
+              echo
+              echo "int main () { return snprintf (); }"
+            } >> snprintftest.c
+            i686-w64-mingw32-gcc -Wall snprintftest.c
+          EOF
